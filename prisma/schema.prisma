@@ -1,0 +1,105 @@
+// Chaba Inn — ฐานข้อมูลระบบจองตรง
+// พัฒนาเริ่มต้นด้วย SQLite (ไฟล์เดียว รันได้ทันทีไม่ต้องติดตั้งฐานข้อมูลแยก)
+// เมื่อขึ้นใช้งานจริงบน chabainn.com แนะนำสลับเป็น PostgreSQL/MySQL
+// โดยเปลี่ยนแค่ provider + DATABASE_URL ด้านล่าง (ดู README.md หัวข้อ "การขึ้นระบบจริง")
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// หมายเหตุ: SQLite ไม่รองรับ enum ในระดับฐานข้อมูล จึงใช้ String แทนและตรวจค่าใน
+// ระดับแอปพลิเคชัน (ค่าที่ใช้จริงมีแค่ "ADMIN" หรือ "STAFF") — ถ้าย้ายไปใช้ PostgreSQL/MySQL
+// ภายหลังสามารถเปลี่ยนกลับเป็น enum จริงได้ตามสบาย
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  name         String
+  role         String   @default("STAFF") // "ADMIN" ผู้ดูแลหลัก (ทุกสาขา) หรือ "STAFF" ผู้ช่วย (เฉพาะสาขาที่มอบหมาย)
+  // สาขาที่ผู้ช่วยคนนี้ดูแล (ผู้ดูแลหลักไม่ใช้ฟิลด์นี้ เข้าถึงได้ทุกสาขา)
+  branches     StaffBranch[]
+  createdAt    DateTime @default(now())
+}
+
+model StaffBranch {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branchId  String
+  branch    Branch  @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, branchId])
+}
+
+model Branch {
+  id           String   @id // slug เช่น "srinakarin"
+  name         String
+  nameEn       String?
+  location     String
+  distanceNote String?
+  stars        Int      @default(4)
+  reviewScore  Float    @default(0)
+  reviewCount  Int      @default(0)
+  lat          Float?
+  lng          Float?
+  lineOaUrl    String?  // ลิงก์ LINE OA สำหรับกดจอง
+  phone        String?
+  facebookUrl  String?
+  policyExtra  String   @default("") // กฎระเบียบสัตว์เลี้ยงเพิ่มเติมเฉพาะสาขา (นโยบายหลักล็อกไว้ในโค้ด ไม่เก็บในนี้)
+  active       Boolean  @default(true)
+
+  rooms       Room[]
+  promotions  Promotion[]
+  staff       StaffBranch[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Room {
+  id        String  @id @default(cuid())
+  branchId  String
+  branch    Branch  @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  name      String
+  nameEn    String?
+  bedType   String
+  sizeSqm   Int?
+  capacity  Int     @default(2)
+  price     Int     // ราคาปกติ บาท/คืน
+  active    Boolean @default(true) // เปิดขาย / ปิดขาย
+  sortOrder Int     @default(0)
+
+  photos    Photo[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Photo {
+  id        String   @id @default(cuid())
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  url       String   // เส้นทางไฟล์ใต้ /public/uploads/...
+  altText   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Promotion {
+  id          String   @id @default(cuid())
+  branchId    String
+  branch      Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  title       String
+  discountPct Int
+  startDate   DateTime?
+  endDate     DateTime?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
