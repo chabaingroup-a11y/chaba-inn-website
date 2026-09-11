@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   session.userId = user.id;
   session.username = user.username;
   session.name = user.name;
-  session.role = user.role;
+  session.role = user.role as "ADMIN" | "STAFF";
   await session.save();
 
   return NextResponse.json({ ok: true });
