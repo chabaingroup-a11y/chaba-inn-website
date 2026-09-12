@@ -27,6 +27,25 @@ export default async function HomePage() {
         </div>
       </header>
 
+      <section className="hero">
+        <div className="hero-inner">
+          <span className="hero-eyebrow">✅ จองตรง ไม่ผ่านตัวกลาง</span>
+          <h1>
+            พักผ่อนพร้อมเพื่อนขนฟู <span className="accent">ที่ Chaba Group</span>
+          </h1>
+          <p className="sub">
+            5 สาขาทั่วไทย รับสัตว์เลี้ยงทุกห้อง ทุกสาขา 100% ไม่มีค่าใช้จ่ายเพิ่ม จองตรงกับเราราคาดีกว่า
+            ไม่มีค่าธรรมเนียมตัวกลาง ยืนยันการจองรวดเร็วผ่าน LINE
+          </p>
+          <div className="trust-row">
+            <span className="trust-chip">💚 จองตรงถูกกว่า OTA</span>
+            <span className="trust-chip">🚫 ไม่มีค่าธรรมเนียมตัวกลาง</span>
+            <span className="trust-chip">⚡ ยืนยันไว ผ่าน LINE</span>
+            <span className="trust-chip">🐾 Pet Friendly 100%</span>
+          </div>
+        </div>
+      </section>
+
       <main className="wrap" style={{ paddingBottom: 60 }}>
         <h1 style={{ fontSize: "1.4rem", marginTop: 20 }}>
           ค้นหาที่พักของ Chaba Group — {branches.length} สาขา
