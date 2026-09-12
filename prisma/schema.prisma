@@ -57,9 +57,22 @@ model Branch {
   rooms       Room[]
   promotions  Promotion[]
   staff       StaffBranch[]
+  photos      BranchPhoto[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// รูปภาพแกลเลอรีของสาขา (ภาพรวมโรงแรม/บรรยากาศ) — แยกจากรูปภาพรายห้องพัก (Photo)
+// ลูกค้าเปิดหน้าสาขาแล้วกดดูรูปขยายใหญ่ เลื่อนดูได้ทุกรูปในสาขานั้น
+model BranchPhoto {
+  id        String   @id @default(cuid())
+  branchId  String
+  branch    Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  url       String
+  altText   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
 }
 
 model Room {
