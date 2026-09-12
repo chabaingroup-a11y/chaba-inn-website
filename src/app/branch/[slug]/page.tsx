@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { gradientFor } from "@/lib/gradients";
+import Gallery from "./Gallery";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,7 @@ export default async function BranchPage({ params }: { params: { slug: string } 
     include: {
       rooms: { where: { active: true }, orderBy: { sortOrder: "asc" }, include: { photos: true } },
       promotions: { where: { active: true } },
+      photos: { orderBy: { sortOrder: "asc" } },
     },
   });
   if (!branch) return notFound();
@@ -32,9 +34,28 @@ export default async function BranchPage({ params }: { params: { slug: string } 
         <div style={{ fontSize: ".85rem", color: "var(--ink-soft)", marginTop: 4 }}>
           📍 {branch.location} {branch.distanceNote ? `· ${branch.distanceNote}` : ""}
         </div>
-        <div className="p-hero" style={{ background: `linear-gradient(${gradientFor(branch.id)})` }}>
-          🏨
-        </div>
+        {branch.photos.length > 0 ? (
+          <div className="p-hero" style={{ padding: 0, overflow: "hidden" }}>
+            <img
+              src={branch.photos[0].url}
+              alt={branch.photos[0].altText || branch.name}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            />
+          </div>
+        ) : (
+          <div className="p-hero" style={{ background: `linear-gradient(${gradientFor(branch.id)})` }}>
+            🏨
+          </div>
+        )}
+
+        {branch.photos.length > 0 && (
+          <div style={{ margin: "14px 0 4px" }}>
+            <Gallery
+              photos={branch.photos.map((p) => ({ id: p.id, url: p.url, altText: p.altText }))}
+              branchName={branch.name}
+            />
+          </div>
+        )}
 
         {branch.promotions.length > 0 && (
           <div className="promo-strip">
