@@ -7,7 +7,10 @@ export const dynamic = "force-dynamic"; // ข้อมูลห้อง/รา
 export default async function HomePage() {
   const branches = await prisma.branch.findMany({
     where: { active: true },
-    include: { rooms: { where: { active: true } } },
+    include: {
+      rooms: { where: { active: true } },
+      photos: { orderBy: { sortOrder: "asc" }, take: 1 },
+    },
     orderBy: { id: "asc" },
   });
 
@@ -57,9 +60,19 @@ export default async function HomePage() {
             const minPrice = b.rooms.length ? Math.min(...b.rooms.map((r) => r.price)) : null;
             return (
               <Link key={b.id} href={`/branch/${b.id}`} className="branch-card" style={{ display: "flex" }}>
-                <div className="ph" style={{ background: `linear-gradient(${gradientFor(b.id)})` }}>
-                  🏨
-                </div>
+                {b.photos[0] ? (
+                  <div className="ph" style={{ padding: 0, overflow: "hidden" }}>
+                    <img
+                      src={b.photos[0].url}
+                      alt={b.photos[0].altText || b.name}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                    />
+                  </div>
+                ) : (
+                  <div className="ph" style={{ background: `linear-gradient(${gradientFor(b.id)})` }}>
+                    🏨
+                  </div>
+                )}
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div className="name">{b.name}</div>
                   <div className="stars">{"★".repeat(b.stars)}</div>
